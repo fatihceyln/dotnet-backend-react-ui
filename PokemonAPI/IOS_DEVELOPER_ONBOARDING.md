@@ -35,9 +35,9 @@ Bu boyuttaki proje icin bu yapi yeterli. Daha fazla soyutlama su an gereksiz.
   `Pokemon` entity'si. Veritabani modelini temsil eder.
 - `Features/Pokemons/PokemonService.cs`
   Listeleme ve detay getirme use-case'leri burada.
-- `Features/Pokemons/GetPokemonsResponseDto.cs`
+- `Features/Pokemons/GetPokemonsResponseDTO.cs`
   Liste endpoint'inin response contract'i.
-- `Features/Pokemons/GetPokemonByIdResponseDto.cs`
+- `Features/Pokemons/GetPokemonByIdResponseDTO.cs`
   Detay endpoint'inin response contract'i.
 - `Infrastructure/Persistence/PokemonDbContext.cs`
   EF Core context'i, tablo mapping'i ve seed data burada.
