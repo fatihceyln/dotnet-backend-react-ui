@@ -1,7 +1,7 @@
 namespace PokemonAPI.Features.Pokemons;
 
-public sealed record GetPokemonsResponseDto(IReadOnlyList<PokemonListItemResponseDto> Data);
+public sealed record GetPokemonsResponseDTO(IReadOnlyList<PokemonListItemResponseDTO> Data);
 
-public sealed record PokemonListItemResponseDto(
+public sealed record PokemonListItemResponseDTO(
     int Id,
     string Name);

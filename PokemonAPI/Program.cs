@@ -17,9 +17,7 @@ builder.Services.AddSwaggerGen();
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.ConfigureHttpJsonOptions(options =>
-    {
-        options.SerializerOptions.WriteIndented = true;
-    });
+        options.SerializerOptions.WriteIndented = true);
 }
 
 var app = builder.Build();

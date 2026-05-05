@@ -5,13 +5,13 @@ namespace PokemonAPI.Features.Pokemons;
 
 public sealed class PokemonService(PokemonDbContext dbContext)
 {
-    public async Task<GetPokemonsResponseDto> GetPokemonsAsync(
+    public async Task<GetPokemonsResponseDTO> GetPokemonsAsync(
         string? search,
         CancellationToken cancellationToken = default)
     {
         if (search is not null && string.IsNullOrWhiteSpace(search))
         {
-            return new GetPokemonsResponseDto([]);
+            return new GetPokemonsResponseDTO([]);
         }
 
         var query = dbContext.Pokemons
@@ -25,22 +25,22 @@ public sealed class PokemonService(PokemonDbContext dbContext)
 
         var pokemons = await query
             .OrderBy(pokemon => pokemon.Id)
-            .Select(pokemon => new PokemonListItemResponseDto(
+            .Select(pokemon => new PokemonListItemResponseDTO(
                 pokemon.Id,
                 pokemon.Name))
             .ToListAsync(cancellationToken);
 
-        return new GetPokemonsResponseDto(pokemons);
+        return new GetPokemonsResponseDTO(pokemons);
     }
 
-    public async Task<GetPokemonByIdResponseDto?> GetPokemonByIdAsync(
+    public async Task<GetPokemonByIdResponseDTO?> GetPokemonByIdAsync(
         int id,
         CancellationToken cancellationToken = default)
     {
         var pokemon = await dbContext.Pokemons
             .AsNoTracking()
             .Where(pokemon => pokemon.Id == id)
-            .Select(pokemon => new PokemonDetailResponseDto(
+            .Select(pokemon => new PokemonDetailResponseDTO(
                 pokemon.Id,
                 pokemon.Name,
                 pokemon.Type,
@@ -49,6 +49,6 @@ public sealed class PokemonService(PokemonDbContext dbContext)
 
         return pokemon is null
             ? null
-            : new GetPokemonByIdResponseDto(pokemon);
+            : new GetPokemonByIdResponseDTO(pokemon);
     }
 }

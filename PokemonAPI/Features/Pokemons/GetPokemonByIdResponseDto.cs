@@ -1,8 +1,8 @@
 namespace PokemonAPI.Features.Pokemons;
 
-public sealed record GetPokemonByIdResponseDto(PokemonDetailResponseDto Data);
+public sealed record GetPokemonByIdResponseDTO(PokemonDetailResponseDTO Data);
 
-public sealed record PokemonDetailResponseDto(
+public sealed record PokemonDetailResponseDTO(
     int Id,
     string Name,
     string Type,
