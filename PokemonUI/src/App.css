@@ -29,6 +29,24 @@
   color: #526071;
 }
 
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border: 1px solid #d7dde5;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #14202b;
+  font: inherit;
+}
+
+.search-input:focus {
+  outline: 2px solid #f2c66d;
+  outline-offset: 2px;
+  border-color: #c6922b;
+}
+
 .status-message {
   margin: 0;
   padding: 14px 16px;

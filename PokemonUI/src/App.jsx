@@ -3,6 +3,7 @@ import './App.css'
 
 function App() {
   const [pokemons, setPokemons] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -14,7 +15,12 @@ function App() {
         setIsLoading(true)
         setErrorMessage('')
 
-        const response = await fetch('/pokemons', {
+        const trimmedSearchTerm = searchTerm.trim()
+        const requestUrl = trimmedSearchTerm
+          ? `/pokemons?search=${encodeURIComponent(trimmedSearchTerm)}`
+          : '/pokemons'
+
+        const response = await fetch(requestUrl, {
           signal: controller.signal,
         })
 
@@ -40,7 +46,7 @@ function App() {
     return () => {
       controller.abort()
     }
-  }, [])
+  }, [searchTerm])
 
   return (
     <main className="app-shell">
@@ -48,6 +54,14 @@ function App() {
         <p className="eyebrow">Local backend</p>
         <h1>Pokemon Listesi</h1>
         <p className="description">Pokemon isimleri ve id degerleri.</p>
+
+        <input
+          type="search"
+          className="search-input"
+          placeholder="Pokemon ara"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
 
         {isLoading ? <p className="status-message">Yukleniyor...</p> : null}
 
