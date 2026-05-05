@@ -1,0 +1,6 @@
+@PokemonAPI_HostAddress = http://localhost:5102
+
+# OpenAPI document (Development only)
+GET {{PokemonAPI_HostAddress}}/openapi/v1.json
+
+###
