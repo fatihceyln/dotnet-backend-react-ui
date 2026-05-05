@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using PokemonAPI.Models;
+using PokemonAPI.Features.Pokemons;
 
-namespace PokemonAPI.Data;
+namespace PokemonAPI.Infrastructure.Persistence;
 
 public sealed class PokemonDbContext(DbContextOptions<PokemonDbContext> options) : DbContext(options)
 {

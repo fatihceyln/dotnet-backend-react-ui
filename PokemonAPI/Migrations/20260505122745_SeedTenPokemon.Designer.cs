@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using PokemonAPI.Data;
+using PokemonAPI.Infrastructure.Persistence;
 
 #nullable disable
 
@@ -24,7 +24,7 @@ namespace PokemonAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PokemonAPI.Models.Pokemon", b =>
+            modelBuilder.Entity("PokemonAPI.Features.Pokemons.Pokemon", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

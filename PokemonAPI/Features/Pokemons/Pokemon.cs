@@ -1,4 +1,4 @@
-namespace PokemonAPI.Models;
+namespace PokemonAPI.Features.Pokemons;
 
 public sealed class Pokemon
 {

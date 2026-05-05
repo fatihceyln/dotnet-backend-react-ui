@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using PokemonAPI.Contracts.Responses;
-using PokemonAPI.Data;
+using PokemonAPI.Infrastructure.Persistence;
 
-namespace PokemonAPI.Application.Services;
+namespace PokemonAPI.Features.Pokemons;
 
 public sealed class PokemonService(PokemonDbContext dbContext)
 {

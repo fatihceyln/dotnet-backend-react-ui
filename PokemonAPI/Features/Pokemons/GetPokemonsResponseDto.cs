@@ -1,4 +1,4 @@
-namespace PokemonAPI.Contracts.Responses;
+namespace PokemonAPI.Features.Pokemons;
 
 public sealed record GetPokemonsResponseDto(IReadOnlyList<PokemonListItemResponseDto> Data);
 

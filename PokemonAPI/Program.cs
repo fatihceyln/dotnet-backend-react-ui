@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using PokemonAPI.Application.Services;
-using PokemonAPI.Contracts.Responses;
-using PokemonAPI.Data;
+using PokemonAPI.Features.Pokemons;
+using PokemonAPI.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
