@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PokemonAPI.Application.Services;
 using PokemonAPI.Contracts.Responses;
 using PokemonAPI.Data;
 
@@ -9,6 +10,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<PokemonDbContext>(options =>
     options.UseNpgsql(connectionString));
+builder.Services.AddScoped<PokemonService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,34 +33,21 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/pokemons", async (PokemonDbContext dbContext) =>
+app.MapGet("/pokemons", async (PokemonService pokemonService, CancellationToken cancellationToken) =>
 {
-    var pokemons = await dbContext.Pokemons
-        .AsNoTracking()
-        .OrderBy(pokemon => pokemon.Id)
-        .Select(pokemon => new PokemonListItemResponseDto(
-            pokemon.Id,
-            pokemon.Name))
-        .ToListAsync();
-
-    return Results.Ok(new GetPokemonsResponseDto(pokemons));
+    var response = await pokemonService.GetPokemonsAsync(cancellationToken);
+    return Results.Ok(response);
 });
 
-app.MapGet("/pokemons/{id:int}", async (int id, PokemonDbContext dbContext) =>
+app.MapGet("/pokemons/{id:int}", async (
+    int id,
+    PokemonService pokemonService,
+    CancellationToken cancellationToken) =>
 {
-    var pokemon = await dbContext.Pokemons
-        .AsNoTracking()
-        .Where(pokemon => pokemon.Id == id)
-        .Select(pokemon => new PokemonDetailResponseDto(
-            pokemon.Id,
-            pokemon.Name,
-            pokemon.Type,
-            pokemon.Age))
-        .SingleOrDefaultAsync();
-
-    return pokemon is null
+    var response = await pokemonService.GetPokemonByIdAsync(id, cancellationToken);
+    return response is null
         ? Results.NotFound()
-        : Results.Ok(new GetPokemonByIdResponseDto(pokemon));
+        : Results.Ok(response);
 });
 
 app.Run();
