@@ -7,6 +7,7 @@ En kisa haliyle:
 - `Program.cs`: Uygulamanin giris noktasi ve tum HTTP route'lar burada.
 - `PokemonDbContext`: Veritabani erisim katmani.
 - `Pokemon`: Veritabani/entity modeli.
+- `Response DTO`'lar: API'nin disariya verdigi JSON contract'i.
 - `Migrations`: Veritabani semasi ve seed degisiklik gecmisi.
 
 Bu proje bir iOS geliştirici icin su sekilde dusunulebilir:
@@ -33,6 +34,8 @@ Proje dosya duzeni:
   EF Core context'i. Tablo adi, kolon mapping'leri, seed data burada.
 - `PokemonAPI/Models/Pokemon.cs`
   `Pokemon` entity'si. Veritabani satirinin C# karsiligi.
+- `PokemonAPI/Contracts/Responses/*.cs`
+  API response modelleri. Endpoint'in dondugu JSON sekli burada tipli olarak tanimli.
 - `PokemonAPI/Migrations/*.cs`
   Veritabani semasi degisimleri. Her migration bir tarih damgali adim.
 - `PokemonAPI/Migrations/*Designer.cs`
@@ -63,6 +66,7 @@ Onemli nokta:
 - Service yok.
 - Application/Domain/Infrastructure ayrimi yok.
 - Business logic de route tanimi da `Program.cs` icinde.
+- Response contract'i artik DTO ile tanimli ama application/service katmani halen yok.
 
 Yani bu repo, dokumandaki hedef mimariye tam ulasmis degil. Kucuk oldugu icin okunmasi kolay ama buyurse hizla dagilir.
 
@@ -78,8 +82,8 @@ Bir istek geldiginde olan sey:
 Swift tarafindan bakarsan:
 
 - `URLSession` ile cagracagin endpoint burada `MapGet(...)` ile tanimli.
-- JSON response shape backend'de anonim object ile kuruluyor.
-- DTO sinifi yok; response direkt query icinde sekillendiriliyor.
+- JSON response shape artik response DTO ile tanimli.
+- Veri, EF query icinde DTO'ya projection edilip donuluyor.
 
 ## Dosya Bazinda Dikkat Edilecekler
 
@@ -93,11 +97,12 @@ Burada:
 - `PokemonDbContext` DI'a ekleniyor
 - Swagger sadece `Development` ortaminda aciliyor
 - tum route'lar burada map ediliyor
+- entity'den response DTO'ya projection burada yapiliyor
 
 Dikkat:
 
 - Endpoint sayisi artarsa bu dosya cop olur.
-- Query, response shape ve route ayni yerde. Bu uzun vadede kotu.
+- Query ve route hala ayni yerde. Response shape artik DTO'ya tasinmis olsa da bu dosya hala fazla sorumluluk tasiyor.
 - Su an `AsNoTracking()` kullanimi dogru; read-only sorgular icin gereksiz tracking maliyetini kesiyor.
 - `app.UseHttpsRedirection()` var. Lokal testte HTTP/HTTPS portlarina dikkat etmek gerekir.
 
@@ -124,7 +129,27 @@ Bu entity sinifi.
 Dikkat:
 
 - Bu bir API response modeli degil, veritabani entity'si.
-- Proje buyurse entity ile response contract'ini ayirmak gerekir. Yoksa DB degisikligi API'yi kirar.
+- Response DTO'lar eklendigi icin entity ile API contract'i artik ayrismaya basladi. Bu dogru yon.
+- Ama request DTO, service layer ve mapping disiplini olmadan mimari hala yarim.
+
+### `PokemonAPI/Contracts/Responses/*.cs`
+
+Bu klasor API'nin disariya verdigi response contract'larini tutuyor.
+
+Su an:
+
+- `GetPokemonsResponseDto`
+- `PokemonListItemResponseDto`
+- `GetPokemonByIdResponseDto`
+- `PokemonDetailResponseDto`
+
+var.
+
+Dikkat:
+
+- Bunlar veritabani modeli degil, API sozlesmesi.
+- iOS tarafi bu contract'i tuketir; DB yapisi degisse bile API'yi korumak icin bu katman gerekir.
+- Response DTO eklemek dogru adim, ama tek basina temiz mimari kurmaz.
 
 ### `PokemonAPI/Migrations/*`
 
@@ -199,7 +224,7 @@ Bugun kucuk diye sorun yok, yarin sorun olur.
 
 ### 3. Entity ile API response'i ayni sey degil
 
-Su an response query icinde sekillendiriliyor. Bu, bu kadar kucuk proje icin kabul edilebilir.
+Bu ayrim yeni yeni kurulmaya basladi. Artik response DTO var; bu dogru.
 
 Ama buyurse:
 
@@ -207,7 +232,7 @@ Ama buyurse:
 - request DTO
 - response DTO
 
-ayrimi gerekir. Aksi halde DB kolon degisikligi API contract'ini dogrudan bozar.
+ayrimi net olmali. Aksi halde DB kolon degisikligi API contract'ini dogrudan bozar.
 
 ### 4. Seed data'yi hafife alma
 
@@ -249,13 +274,15 @@ En verimli okuma sirasi bu:
    Cunku uygulamanin ne sundugu tamamen burada gorunuyor.
 2. `PokemonAPI/Data/PokemonDbContext.cs`
    Veritabani map'i ve seed mantigini burada anlarsin.
-3. `PokemonAPI/Models/Pokemon.cs`
+3. `PokemonAPI/Contracts/Responses/`
+   API'nin disariya ne dondugunu burada net gorursun.
+4. `PokemonAPI/Models/Pokemon.cs`
    Veri modeli cok basit.
-4. `PokemonAPI/Migrations/`
+5. `PokemonAPI/Migrations/`
    DB'nin nasil evrildigini burada gorursun.
-5. `PokemonAPI/PokemonAPI.http`
+6. `PokemonAPI/PokemonAPI.http`
    Endpoint'leri hemen elle deneyebilirsin.
-6. `docker-compose.yml`
+7. `docker-compose.yml`
    Lokal DB nasil kalkiyor onu netlestirirsin.
 
 ## Lokal Calistirma Akisi
@@ -284,7 +311,8 @@ Iyi tarafi:
 Zayif tarafi:
 
 - gercek katmanli mimari yok
-- endpoint logic'i `Program.cs`'de toplu
+- endpoint logic'i hala `Program.cs`'de toplu
+- response DTO var ama request/application/service katmanlari yok
 - test yok
 - config/secrets ayrimi production seviyesinde degil
 
