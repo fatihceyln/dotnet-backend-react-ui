@@ -12,6 +12,14 @@ builder.Services.AddDbContext<PokemonDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.ConfigureHttpJsonOptions(options =>
+    {
+        options.SerializerOptions.WriteIndented = true;
+    });
+}
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
