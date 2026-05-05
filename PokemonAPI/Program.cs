@@ -1,4 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using PokemonAPI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+
+builder.Services.AddDbContext<PokemonDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddOpenApi();
 
@@ -11,21 +20,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/pokemons", () =>
+app.MapGet("/pokemons", async (PokemonDbContext dbContext) =>
 {
-    var response = new
-    {
-        data = new[]
+    var pokemons = await dbContext.Pokemons
+        .AsNoTracking()
+        .OrderBy(pokemon => pokemon.Id)
+        .Select(pokemon => new
         {
-            new
-            {
-                id = 1,
-                name = "charmender"
-            }
-        }
-    };
+            id = pokemon.Id,
+            name = pokemon.Name
+        })
+        .ToListAsync();
 
-    return Results.Ok(response);
+    return Results.Ok(new { data = pokemons });
 });
 
 app.Run();

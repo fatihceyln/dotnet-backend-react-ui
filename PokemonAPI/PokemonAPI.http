@@ -4,3 +4,8 @@
 GET {{PokemonAPI_HostAddress}}/openapi/v1.json
 
 ###
+
+# Pokemons
+GET {{PokemonAPI_HostAddress}}/pokemons
+
+###
