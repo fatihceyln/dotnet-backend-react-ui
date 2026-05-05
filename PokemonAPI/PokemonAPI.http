@@ -10,6 +10,14 @@ GET {{PokemonAPI_HostAddress}}/pokemons
 
 ###
 
+GET {{PokemonAPI_HostAddress}}/pokemons?search=ra
+
+###
+
+GET {{PokemonAPI_HostAddress}}/pokemons?search=
+
+###
+
 @PokemonId = 1
 GET {{PokemonAPI_HostAddress}}/pokemons/{{PokemonId}}
 

@@ -32,9 +32,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/pokemons", async (PokemonService pokemonService, CancellationToken cancellationToken) =>
+app.MapGet("/pokemons", async (
+    string? search,
+    PokemonService pokemonService,
+    CancellationToken cancellationToken) =>
 {
-    var response = await pokemonService.GetPokemonsAsync(cancellationToken);
+    var response = await pokemonService.GetPokemonsAsync(search, cancellationToken);
     return Results.Ok(response);
 });
 
