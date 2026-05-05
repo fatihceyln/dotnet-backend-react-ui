@@ -1,16 +1,80 @@
-# React + Vite
+# PokemonUI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu klasor frontend UI projesini icerir. Uygulama `React` ve `Vite` kullanir.
 
-Currently, two official plugins are available:
+## Gereksinimler
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20+
+- npm
+- Ayakta olan backend API
 
-## React Compiler
+## Kullandigi portlar
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- UI dev server: `http://localhost:5173`
+- Proxy ile baglandigi API: `http://localhost:5102`
 
-## Expanding the ESLint configuration
+UI, `/pokemons` isteklerini Vite proxy uzerinden API'ye iletir. Bu yuzden backend ayakta degilse ekran calismaz.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Uygulamayi ayaga kaldirma
+
+1. Backend'i ayaga kaldir:
+
+   API projesi `http://localhost:5102` uzerinde calisiyor olmali.
+
+2. Bagimliliklari yukle:
+
+```bash
+npm install
+```
+
+3. UI'yi calistir:
+
+```bash
+npm run dev
+```
+
+4. Tarayicida ac:
+
+- `http://localhost:5173`
+
+## Build ve kalite komutlari
+
+Development:
+
+```bash
+npm run dev
+```
+
+Production build:
+
+```bash
+npm run build
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+Local preview:
+
+```bash
+npm run preview
+```
+
+## API baglantisi
+
+Proxy ayari [`vite.config.js`](/Users/fatih/Documents/dotnet-backend/PokemonUI/vite.config.js) icinde tanimli:
+
+```js
+target: 'http://localhost:5102'
+```
+
+Backend farkli portta calisacaksa bu dosyayi guncellemen gerekir.
+
+## Sorun giderme
+
+- `fetch` hatasi aliyorsan, sorun buyuk ihtimalle UI degil backend'dir. Once API'yi kontrol et.
+- `5173` portu doluysa Vite farkli port acabilir. Terminal ciktisini kontrol et.
+- Proxy calismiyorsa `vite.config.js` icindeki target ile API'nin gercek portu ayni degildir.
