@@ -95,6 +95,27 @@ Example:
 curl http://localhost:5102/pokemons
 ```
 
+Example response:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "scyther"
+    },
+    {
+      "id": 2,
+      "name": "lapras"
+    },
+    {
+      "id": 3,
+      "name": "arcanine"
+    }
+  ]
+}
+```
+
 ### `GET /pokemons?search=scy`
 
 Returns Pokemon whose names match the search term.
@@ -105,6 +126,19 @@ Example:
 curl "http://localhost:5102/pokemons?search=scy"
 ```
 
+Example response:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "scyther"
+    }
+  ]
+}
+```
+
 ### `GET /pokemons/{id}`
 
 Returns a single Pokemon by id.
@@ -113,6 +147,19 @@ Example:
 
 ```bash
 curl http://localhost:5102/pokemons/1
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "scyther",
+    "type": "air",
+    "age": 5
+  }
+}
 ```
 
 ## Seed Data
