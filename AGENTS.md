@@ -26,3 +26,6 @@
 - Prefer clear naming over clever code.
 - Add tests for business-critical behavior.
 - Reject over-engineering.
+
+## HTTP / manual checks
+- When you add or change an API route, update the project’s `.http` file (e.g. `PokemonAPI/PokemonAPI.http`) in the same change so example requests stay current.

@@ -9,3 +9,8 @@ GET {{PokemonAPI_HostAddress}}/openapi/v1.json
 GET {{PokemonAPI_HostAddress}}/pokemons
 
 ###
+
+@PokemonId = 1
+GET {{PokemonAPI_HostAddress}}/pokemons/{{PokemonId}}
+
+###
