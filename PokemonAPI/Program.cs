@@ -11,4 +11,21 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapGet("/pokemons", () =>
+{
+    var response = new
+    {
+        data = new[]
+        {
+            new
+            {
+                id = 1,
+                name = "charmender"
+            }
+        }
+    };
+
+    return Results.Ok(response);
+});
+
 app.Run();
