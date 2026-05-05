@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PokemonAPI.Contracts.Responses;
 using PokemonAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,14 +36,12 @@ app.MapGet("/pokemons", async (PokemonDbContext dbContext) =>
     var pokemons = await dbContext.Pokemons
         .AsNoTracking()
         .OrderBy(pokemon => pokemon.Id)
-        .Select(pokemon => new
-        {
-            id = pokemon.Id,
-            name = pokemon.Name
-        })
+        .Select(pokemon => new PokemonListItemResponseDto(
+            pokemon.Id,
+            pokemon.Name))
         .ToListAsync();
 
-    return Results.Ok(new { data = pokemons });
+    return Results.Ok(new GetPokemonsResponseDto(pokemons));
 });
 
 app.MapGet("/pokemons/{id:int}", async (int id, PokemonDbContext dbContext) =>
@@ -50,18 +49,16 @@ app.MapGet("/pokemons/{id:int}", async (int id, PokemonDbContext dbContext) =>
     var pokemon = await dbContext.Pokemons
         .AsNoTracking()
         .Where(pokemon => pokemon.Id == id)
-        .Select(pokemon => new
-        {
-            id = pokemon.Id,
-            name = pokemon.Name,
-            type = pokemon.Type,
-            age = pokemon.Age
-        })
+        .Select(pokemon => new PokemonDetailResponseDto(
+            pokemon.Id,
+            pokemon.Name,
+            pokemon.Type,
+            pokemon.Age))
         .SingleOrDefaultAsync();
 
     return pokemon is null
         ? Results.NotFound()
-        : Results.Ok(new { data = pokemon });
+        : Results.Ok(new GetPokemonByIdResponseDto(pokemon));
 });
 
 app.Run();
