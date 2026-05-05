@@ -1,5 +1,3 @@
-# dotnet-backend
-
 Simple full-stack Pokemon sample application.
 
 This repository contains:
