@@ -51,4 +51,25 @@ public sealed class PokemonService(PokemonDbContext dbContext)
             ? null
             : new GetPokemonByIdResponseDTO(pokemon);
     }
+
+    public async Task<PokemonDetailResponseDTO> CreatePokemonAsync(
+        CreatePokemonRequestDTO request,
+        CancellationToken cancellationToken = default)
+    {
+        var pokemon = new Pokemon
+        {
+            Name = request.Name.Trim(),
+            Type = request.Type.Trim(),
+            Age = request.Age
+        };
+
+        dbContext.Pokemons.Add(pokemon);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new PokemonDetailResponseDTO(
+            pokemon.Id,
+            pokemon.Name,
+            pokemon.Type,
+            pokemon.Age);
+    }
 }

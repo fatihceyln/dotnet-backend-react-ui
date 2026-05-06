@@ -41,6 +41,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
     });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin"));
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -61,6 +66,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapPost("/auth/login", async (
     LoginRequestDTO request,
@@ -117,5 +123,15 @@ app.MapGet("/pokemons/{id:int}", async (
         ? Results.NotFound()
         : Results.Ok(response);
 });
+
+app.MapPost("/pokemons", async (
+    CreatePokemonRequestDTO request,
+    PokemonService pokemonService,
+    CancellationToken cancellationToken) =>
+{
+    var createdPokemon = await pokemonService.CreatePokemonAsync(request, cancellationToken);
+    return Results.Created($"/pokemons/{createdPokemon.Id}", createdPokemon);
+})
+.RequireAuthorization("AdminOnly");
 
 app.Run();
