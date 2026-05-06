@@ -1,7 +1,117 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 
-function PokemonListScreen({ onSelectPokemon }) {
+async function readErrorMessage(response) {
+  const { status, statusText } = response
+
+  try {
+    const contentType = response.headers.get('content-type') ?? ''
+
+    if (contentType.includes('application/json')) {
+      const body = await response.json()
+      const message =
+        body.message ||
+        body.error ||
+        (body.errors && Object.values(body.errors).flat().join('\n')) ||
+        [body.title, body.detail].filter(Boolean).join(': ')
+
+      if (message) {
+        return status >= 500 ? `HTTP ${status}: ${message}` : message
+      }
+    } else {
+      const text = (await response.text()).trim()
+      if (text) {
+        return status >= 500 ? `HTTP ${status}: ${text}` : text
+      }
+    }
+  } catch {}
+
+  return status >= 500
+    ? `HTTP ${status} ${statusText}`.trim()
+    : statusText || 'Istek basarisiz oldu.'
+}
+
+async function fetchJson(url, options = {}) {
+  const headers = new Headers(options.headers ?? {})
+  const hasBody = options.body !== undefined
+
+  if (hasBody && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  })
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response))
+  }
+
+  if (response.status === 204) {
+    return null
+  }
+
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    return null
+  }
+
+  return response.json()
+}
+
+function showBackendError(error) {
+  window.alert(error instanceof Error ? error.message : 'Beklenmeyen bir hata olustu.')
+}
+
+function LoginScreen({ onLogin, isSubmitting }) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    onLogin({
+      username,
+      password,
+    })
+  }
+
+  return (
+    <>
+      <p className="eyebrow">Local backend</p>
+      <h1>Giris Yap</h1>
+      <p className="description">PokemonUI kullanmak icin backend uzerinden giris yap.</p>
+
+      <form className="form-grid" onSubmit={handleSubmit}>
+        <label className="field-group">
+          <span>Kullanici adi</span>
+          <input
+            type="text"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoComplete="username"
+          />
+        </label>
+
+        <label className="field-group">
+          <span>Sifre</span>
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+          />
+        </label>
+
+        <button type="submit" className="primary-button" disabled={isSubmitting}>
+          {isSubmitting ? 'Giris yapiliyor...' : 'Giris yap'}
+        </button>
+      </form>
+    </>
+  )
+}
+
+function PokemonListScreen({ onSelectPokemon, refreshKey }) {
   const [pokemons, setPokemons] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -20,22 +130,19 @@ function PokemonListScreen({ onSelectPokemon }) {
           ? `/pokemons?search=${encodeURIComponent(trimmedSearchTerm)}`
           : '/pokemons'
 
-        const response = await fetch(requestUrl, {
+        const result = await fetchJson(requestUrl, {
           signal: controller.signal,
         })
 
-        if (!response.ok) {
-          throw new Error('Pokemon listesi alinamadi.')
-        }
-
-        const result = await response.json()
-        setPokemons(Array.isArray(result.data) ? result.data : [])
+        setPokemons(Array.isArray(result?.data) ? result.data : [])
       } catch (error) {
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           return
         }
 
-        setErrorMessage('Backend erisilemedi veya gecersiz cevap dondu.')
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Pokemon listesi alinamadi.',
+        )
       } finally {
         setIsLoading(false)
       }
@@ -46,7 +153,7 @@ function PokemonListScreen({ onSelectPokemon }) {
     return () => {
       controller.abort()
     }
-  }, [searchTerm])
+  }, [refreshKey, searchTerm])
 
   return (
     <>
@@ -104,22 +211,19 @@ function PokemonDetailScreen({ pokemonId, onBack }) {
         setIsLoading(true)
         setErrorMessage('')
 
-        const response = await fetch(`/pokemons/${pokemonId}`, {
+        const result = await fetchJson(`/pokemons/${pokemonId}`, {
           signal: controller.signal,
         })
 
-        if (!response.ok) {
-          throw new Error('Pokemon detayi alinamadi.')
-        }
-
-        const result = await response.json()
-        setPokemon(result.data ?? null)
+        setPokemon(result?.data ?? null)
       } catch (error) {
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           return
         }
 
-        setErrorMessage('Pokemon detayi yuklenemedi.')
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Pokemon detayi yuklenemedi.',
+        )
       } finally {
         setIsLoading(false)
       }
@@ -134,11 +238,7 @@ function PokemonDetailScreen({ pokemonId, onBack }) {
 
   return (
     <>
-      <button
-        type="button"
-        className="back-button"
-        onClick={onBack}
-      >
+      <button type="button" className="back-button" onClick={onBack}>
         Listeye don
       </button>
 
@@ -175,21 +275,198 @@ function PokemonDetailScreen({ pokemonId, onBack }) {
   )
 }
 
+function CreatePokemonScreen({ accessToken, onCreated }) {
+  const [name, setName] = useState('')
+  const [type, setType] = useState('')
+  const [age, setAge] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    try {
+      setIsSubmitting(true)
+
+      await fetchJson('/pokemons', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name,
+          type,
+          age: age === '' ? '' : Number(age),
+        }),
+      })
+
+      setName('')
+      setType('')
+      setAge('')
+      onCreated()
+    } catch (error) {
+      showBackendError(error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <>
+      <h1>Pokemon Olustur</h1>
+      <p className="description">Yeni pokemon eklemek icin backend istegi gonder.</p>
+
+      <form className="form-grid" onSubmit={handleSubmit}>
+        <label className="field-group">
+          <span>Isim</span>
+          <input
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </label>
+
+        <label className="field-group">
+          <span>Tip</span>
+          <input
+            type="text"
+            value={type}
+            onChange={(event) => setType(event.target.value)}
+          />
+        </label>
+
+        <label className="field-group">
+          <span>Yas</span>
+          <input
+            type="number"
+            value={age}
+            onChange={(event) => setAge(event.target.value)}
+          />
+        </label>
+
+        <button type="submit" className="primary-button" disabled={isSubmitting}>
+          {isSubmitting ? 'Kaydediliyor...' : 'Pokemon olustur'}
+        </button>
+      </form>
+    </>
+  )
+}
+
 function App() {
+  const [currentView, setCurrentView] = useState('login')
+  const [auth, setAuth] = useState(null)
   const [selectedPokemonId, setSelectedPokemonId] = useState(null)
+  const [pokemonListRefreshKey, setPokemonListRefreshKey] = useState(0)
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+
+  async function handleLogin(credentials) {
+    try {
+      setIsLoggingIn(true)
+
+      const response = await fetchJson('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      })
+
+      if (!response || typeof response.accessToken !== 'string') {
+        throw new Error('Gecersiz backend cevabi alindi.')
+      }
+
+      setAuth({
+        accessToken: response.accessToken,
+        username: credentials.username.trim(),
+      })
+      setCurrentView('list')
+    } catch (error) {
+      showBackendError(error)
+    } finally {
+      setIsLoggingIn(false)
+    }
+  }
+
+  function handleLogout() {
+    setAuth(null)
+    setSelectedPokemonId(null)
+    setCurrentView('login')
+  }
+
+  function handleSelectPokemon(pokemonId) {
+    setSelectedPokemonId(pokemonId)
+    setCurrentView('detail')
+  }
+
+  function handlePokemonCreated() {
+    setSelectedPokemonId(null)
+    setCurrentView('list')
+    setPokemonListRefreshKey((currentValue) => currentValue + 1)
+  }
+
+  if (!auth) {
+    return (
+      <main className="app-shell">
+        <section className="pokemon-panel auth-panel">
+          <LoginScreen onLogin={handleLogin} isSubmitting={isLoggingIn} />
+        </section>
+      </main>
+    )
+  }
 
   return (
     <main className="app-shell">
       <section className="pokemon-panel">
-        <p className="eyebrow">Local backend</p>
-        {selectedPokemonId === null ? (
-          <PokemonListScreen onSelectPokemon={setSelectedPokemonId} />
-        ) : (
+        <header className="panel-header">
+          <p className="eyebrow">Local backend</p>
+
+          <div className="panel-header-right">
+            <p className="user-name">{auth.username}</p>
+
+            <div className="header-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => {
+                  setSelectedPokemonId(null)
+                  setCurrentView('list')
+                }}
+              >
+                Liste
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setCurrentView('create')}
+              >
+                Olustur
+              </button>
+              <button type="button" className="ghost-button" onClick={handleLogout}>
+                Cikis
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {currentView === 'list' ? (
+          <PokemonListScreen
+            onSelectPokemon={handleSelectPokemon}
+            refreshKey={pokemonListRefreshKey}
+          />
+        ) : null}
+
+        {currentView === 'detail' && selectedPokemonId !== null ? (
           <PokemonDetailScreen
             pokemonId={selectedPokemonId}
-            onBack={() => setSelectedPokemonId(null)}
+            onBack={() => {
+              setSelectedPokemonId(null)
+              setCurrentView('list')
+            }}
           />
-        )}
+        ) : null}
+
+        {currentView === 'create' ? (
+          <CreatePokemonScreen
+            accessToken={auth.accessToken}
+            onCreated={handlePokemonCreated}
+          />
+        ) : null}
       </section>
     </main>
   )
