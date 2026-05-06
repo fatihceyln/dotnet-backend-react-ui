@@ -1,0 +1,202 @@
+{
+  "info": {
+    "_postman_id": "d5e26a73-4784-4873-b3b7-f95effcb47bd",
+    "name": "PokemonAPI",
+    "description": "Postman collection for the PokemonAPI minimal API. The login request stores the JWT access token into the collection variable `accessToken` for authenticated requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5102"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "pokemonId",
+      "value": "1"
+    },
+    {
+      "key": "searchTerm",
+      "value": "scy"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Returns a JWT access token for the seeded admin user and stores it in the `accessToken` collection variable."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pokemons",
+      "item": [
+        {
+          "name": "Get All Pokemons",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pokemons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pokemons"
+              ]
+            },
+            "description": "Returns all Pokemon records."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Pokemons",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pokemons?search={{searchTerm}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pokemons"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{searchTerm}}"
+                }
+              ]
+            },
+            "description": "Filters Pokemon by the optional `search` query string."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pokemon By Id",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pokemons/{{pokemonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pokemons",
+                "{{pokemonId}}"
+              ]
+            },
+            "description": "Returns a single Pokemon by numeric id."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Pokemon (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"bulbasaur\",\n  \"type\": \"grass\",\n  \"age\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pokemons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pokemons"
+              ]
+            },
+            "description": "Creates a Pokemon. Requires an admin JWT from the login request."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
