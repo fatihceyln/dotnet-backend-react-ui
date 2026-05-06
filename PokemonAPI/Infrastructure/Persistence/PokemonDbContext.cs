@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PokemonAPI.Features.Auth;
 using PokemonAPI.Features.Pokemons;
 
 namespace PokemonAPI.Infrastructure.Persistence;
@@ -6,6 +7,7 @@ namespace PokemonAPI.Infrastructure.Persistence;
 public sealed class PokemonDbContext(DbContextOptions<PokemonDbContext> options) : DbContext(options)
 {
     public DbSet<Pokemon> Pokemons => Set<Pokemon>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +42,39 @@ public sealed class PokemonDbContext(DbContextOptions<PokemonDbContext> options)
                 new Pokemon { Id = 8, Name = "onix", Type = "air", Age = 10 },
                 new Pokemon { Id = 9, Name = "starmie", Type = "water", Age = 6 },
                 new Pokemon { Id = 10, Name = "ditto", Type = "air", Age = 2 });
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("users");
+
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.Id)
+                .HasColumnName("id");
+
+            entity.Property(user => user.Username)
+                .HasColumnName("username")
+                .IsRequired();
+
+            entity.Property(user => user.PasswordHash)
+                .HasColumnName("password_hash")
+                .IsRequired();
+
+            entity.Property(user => user.Role)
+                .HasColumnName("role")
+                .IsRequired();
+
+            entity.HasIndex(user => user.Username)
+                .IsUnique();
+
+            entity.HasData(new User
+            {
+                Id = 1,
+                Username = "admin",
+                PasswordHash = "AQAAAAIAAYagAAAAEEzwJw/OusEw9Qa1Zs0EGpttmGHcgXhI65/HGUQt2FoHcN+U991dzYxnqZ88pQ+vfw==",
+                Role = "Admin"
+            });
         });
     }
 }

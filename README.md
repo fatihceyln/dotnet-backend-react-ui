@@ -85,6 +85,17 @@ The Vite dev server proxies `/pokemons` requests to `http://localhost:5102`.
 
 ## API Endpoints
 
+### `POST /auth/login`
+
+Returns a JWT access token for the seeded admin user.
+
+Development-only default credentials:
+
+- Username: `admin`
+- Password: `admin123`
+
+Change this password after the first login in any real system. Keeping a known default password is not acceptable outside local development.
+
 ### `GET /pokemons`
 
 Returns all Pokemon.
