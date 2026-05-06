@@ -68,13 +68,21 @@ public sealed class PokemonDbContext(DbContextOptions<PokemonDbContext> options)
             entity.HasIndex(user => user.Username)
                 .IsUnique();
 
-            entity.HasData(new User
-            {
-                Id = 1,
-                Username = "admin",
-                PasswordHash = "AQAAAAIAAYagAAAAEEzwJw/OusEw9Qa1Zs0EGpttmGHcgXhI65/HGUQt2FoHcN+U991dzYxnqZ88pQ+vfw==",
-                Role = "Admin"
-            });
+            entity.HasData(
+                new User
+                {
+                    Id = 1,
+                    Username = "admin",
+                    PasswordHash = "AQAAAAIAAYagAAAAEEzwJw/OusEw9Qa1Zs0EGpttmGHcgXhI65/HGUQt2FoHcN+U991dzYxnqZ88pQ+vfw==",
+                    Role = "Admin"
+                },
+                new User
+                {
+                    Id = 2,
+                    Username = "user",
+                    PasswordHash = "AQAAAAIAAYagAAAAEEU3SVYNZ/7w5haizgu/eWLo7WAcf+1o8TtphzyqrBVW6fP5Kc9lvhA42tkLZPzrmw==",
+                    Role = "User"
+                });
         });
     }
 }
